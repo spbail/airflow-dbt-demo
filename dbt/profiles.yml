@@ -2,7 +2,7 @@ jaffle_shop:
   outputs:
     dev:
       type: postgres
-      threads: 1
+      threads: 4
       host: postgres
       port: 5432
       user: postgres

@@ -20,7 +20,7 @@ default_args = {
 }
 
 dag = DAG(
-    'dbt_advanced_dag_utility',
+    'dbt_singletask',
     default_args=default_args,
     description='A dbt wrapper for Airflow using a utility class to map the dbt DAG to Airflow tasks',
     schedule_interval=None,
@@ -37,13 +37,17 @@ with dag:
     # )
     end_dummy = DummyOperator(task_id='end')
 
-    dag_parser = DbtDagParser(dag=dag,
-                              dbt_global_cli_flags=DBT_GLOBAL_CLI_FLAGS,
-                              dbt_project_dir=DBT_PROJECT_DIR,
-                              dbt_profiles_dir=DBT_PROJECT_DIR,
-                              dbt_target=DBT_TARGET
-                              )
-    dbt_run_group = dag_parser.get_dbt_run_group()
-    dbt_test_group = dag_parser.get_dbt_test_group()
+    dbt_run = BashOperator(
+        task_id='dbt_run',
+        bash_command=f'\
+        dbt {DBT_GLOBAL_CLI_FLAGS} run --target {DBT_TARGET} \
+        --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR}',
+    )
+    dbt_test = BashOperator(
+        task_id='dbt_test',
+        bash_command=f'\
+        dbt {DBT_GLOBAL_CLI_FLAGS} test --target {DBT_TARGET} \
+        --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR}',
+    )
 
-    start_dummy >> dbt_seed >> dbt_run_group >> dbt_test_group >> end_dummy
+    start_dummy >> dbt_seed >> dbt_run >> dbt_test >> end_dummy
