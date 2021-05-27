@@ -20,21 +20,16 @@ default_args = {
 }
 
 dag = DAG(
-    'dbt_singletask',
+    'dbt_single_task_perf_test',
     default_args=default_args,
-    description='A dbt wrapper for Airflow using a utility class to map the dbt DAG to Airflow tasks',
+    description='A dag to run dbt in a single task',
     schedule_interval=None,
 )
 
 with dag:
 
     start_dummy = DummyOperator(task_id='start')
-    dbt_seed = DummyOperator(task_id='dbt_seed')
-    # We're using the dbt seed command here to populate the database for the purpose of this demo
-    # dbt_seed = BashOperator(
-    #     task_id='dbt_seed',
-    #     bash_command=f'dbt {DBT_GLOBAL_CLI_FLAGS} seed --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR}'
-    # )
+    dbt_seed = DummyOperator(task_id='dbt_seed')  # changing seed to a dummy here so it won't be benchmarked
     end_dummy = DummyOperator(task_id='end')
 
     dbt_run = BashOperator(
